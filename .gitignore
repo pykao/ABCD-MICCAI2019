@@ -1,0 +1,6 @@
+__pycache__
+histogram_fg
+correlations
+gridsearch.py
+*.npy
+
