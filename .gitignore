@@ -3,4 +3,4 @@ histogram_fg
 correlations
 gridsearch.py
 *.npy
-
+*.csv
