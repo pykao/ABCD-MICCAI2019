@@ -14,7 +14,8 @@ Python 3.6
 
 ## Run the code
 
+1. Please change the paths accordingly from line #52 to #65.
 
-```python predict_gf.py```
+2. ```python predict_gf.py```
 
 You will find the predicted fluid intelligence (pred_test.csv) of testing dataset in the current directory. 

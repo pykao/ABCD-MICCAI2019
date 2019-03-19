@@ -1,14 +1,13 @@
 import matplotlib
 matplotlib.use('Agg')
-
 import os
 import sys
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import pylab
 
+from matplotlib import pylab
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold, GridSearchCV
 from sklearn.tree import DecisionTreeRegressor
@@ -26,9 +25,7 @@ from sklearn.svm import SVR, LinearSVR
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.neural_network import MLPRegressor
-
 from pystacknet.pystacknet import StackNetRegressor
-
 from xgboost import XGBRegressor
 
 def plot_fluid_intelligence_histogram(labels):
@@ -52,20 +49,30 @@ def get_group_labels(labels, number_of_group):
 		group_labels[labels >= boundry] = idx+1
 	return group_labels
 
-
-seed = 1989
+################################# please change the paths accordingly ########################################
 
 # training file path
-train_btsv_file = '/home/pkao/abcd/traindata/btsv01.txt'
-train_fi_file = '/home/pkao/abcd/traindata/training_fluid_intelligenceV1.csv'
+train_btsv_file = '/home/pkao/abcd/trainData/btsv01.txt'
+train_fi_file = '/home/pkao/abcd/trainData/training_fluid_intelligenceV1.csv'
 
 # validation file path
-valid_btsv_file = '/home/pkao/abcd/valdata/btsv01.txt'
-valid_fi_file = '/home/pkao/abcd/valdata/validation_fluid_intelligenceV1.csv'
+valid_btsv_file = '/home/pkao/abcd/validData/btsv01.txt'
+valid_fi_file = '/home/pkao/abcd/validData/validation_fluid_intelligenceV1.csv'
 
 # test file path
-test_btsv_file = '/media/hdd3/abcd_data/testdata/btsv01.txt'
+test_btsv_file = '/media/hdd3/abcd_data/testData/btsv01.txt'
 
+############################### check if the provided files exists or not #####################
+
+assert exists(train_btsv_file),"btsv01.txt of training set does not exist!!!"
+assert exists(train_fi_file),"training_fluid_intelligenceV1.csv does not exist!!!"
+assert exists(valid_btsv_file),"btsv01.txt of validation set does not exist!!!"
+assert exists(valid_fi_file),"validation_fluid_intelligenceV1.csv does not exist!!!"
+assert exists(test_btsv_file),"btsv01.txt of testing set does not exist!!!"
+
+###############################################################################################################
+
+seed = 1989
 
 dropped_names = ['collection_id', 'btsv01_id', 'dataset_id', 'subjectkey', 'src_subject_id', 
 'interview_date', 'collection_title', 'promoted_subjectkey', 'study_cohort_name', 'subject',
@@ -89,7 +96,7 @@ df_train = merged_train_df.drop(dropped_names, axis=1)
 
 # Ground-truth of the fluid intelligence score
 train_labels = np.array(df_train['residual_fluid_intelligence_score'])
-print(np.mean(train_labels))
+#print(np.mean(train_labels))
 
 # training dataset in dataframe
 df_train = df_train.drop('residual_fluid_intelligence_score', axis = 1)
@@ -117,7 +124,7 @@ df_valid_age_gender = pd.get_dummies(df_valid_age_gender)
 df_valid = merged_valid_df.drop(dropped_names, axis=1)
 
 valid_labels = np.array(df_valid['residual_fluid_intelligence_score'])
-print(np.mean(valid_labels))
+#print(np.mean(valid_labels))
 
 df_valid = df_valid.drop('residual_fluid_intelligence_score', axis = 1)
 
@@ -135,8 +142,8 @@ df_train_valid_fi = pd.concat([df_train_fi, df_valid_fi])
 df_train_valid = pd.concat([df_train, df_valid])
 train_valid_labels = np.concatenate((train_labels, valid_labels), axis=0)
 train_valid_features = np.array(df_train_valid)
+#print(np.mean(train_valid_labels))
 
-print(np.mean(train_valid_labels))
 '''
 # histogram of fluid intelligence of training + validation subjects
 #fig, ax = plt.subplots()
