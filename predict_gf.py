@@ -241,7 +241,7 @@ models=[
        #KNeighborsRegressor(n_neighbors=330,  weights='uniform', n_jobs=-1),
        RandomForestRegressor(n_estimators=800, max_depth=11, random_state=seed, n_jobs=-1),
        RandomForestRegressor(n_estimators=1000, max_depth=7, random_state=seed, n_jobs=-1),
-       ExtraTreesRegressor(n_estimators=1800, max_depth=9, random_state=seed, n_jobs=-1),
+       ExtraTreesRegressor(n_estimators=2200, max_depth=11, random_state=seed, n_jobs=-1),
        GradientBoostingRegressor(n_estimators=40, max_depth=3, random_state=seed),
        GradientBoostingRegressor(n_estimators=20, max_depth=5, random_state=seed),
        ],
