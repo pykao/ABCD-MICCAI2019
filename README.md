@@ -1,1 +1,20 @@
-# The ABCD Neurocognitive Prediction Challenge (ABCD-NP-Challenge 2019)
+# The ABCD Neurocognitive Prediction Challenge 2019
+
+## Dependencies
+
+Python 3.6
+
+## Required Python Libraries
+
+```numpy, pandas, matplotlib, sklearn, pystacknet, xgboost```
+
+[Python implementation of StackNet.](https://github.com/h2oai/pystacknet])
+
+[XGBoost](https://github.com/dmlc/xgboost)
+
+## Run the code
+
+
+```python predict_gf.py```
+
+You will find the predicted fluid intelligence (pred_test.csv) of testing dataset in the current directory. 
