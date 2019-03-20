@@ -106,7 +106,7 @@ df_train = df_train.drop('residual_fluid_intelligence_score', axis = 1)
 feature_list = list(df_train.columns)
 train_features = df_train.values
 train_age_gender = df_train_age_gender.values
-#print(train_features.dtype, train_features.shape)
+
 
 ############################################# Validation Dataset #################################################
 
@@ -177,7 +177,7 @@ df_train_valid_fi = pd.concat([df_train_fi, df_valid_fi])
 df_train_valid = pd.concat([df_train, df_valid])
 train_valid_labels = np.concatenate((train_labels, valid_labels), axis=0)
 train_valid_features = np.array(df_train_valid)
-#print(np.mean(train_valid_labels), np.std(train_valid_labels))
+print(np.mean(train_valid_labels), np.std(train_valid_labels))
 
 # histogram of fluid intelligence of training + validation subjects
 #fig, ax = plt.subplots()
@@ -232,29 +232,55 @@ models=[
        ]
 '''
 
+
 ### training + validation
 models=[
        ###### First Level ########## 
        [
-       KernelRidge(alpha=512),
-       #MLPRegressor(hidden_layer_sizes=(2), solver='adam', max_iter=10000, random_state=seed),
-       #KNeighborsRegressor(n_neighbors=330,  weights='uniform', n_jobs=-1),
-       RandomForestRegressor(n_estimators=800, max_depth=11, random_state=seed, n_jobs=-1),
+       BayesianRidge(),
+       RandomForestRegressor(n_estimators=800, max_depth=13, random_state=seed, n_jobs=-1),
+       RandomForestRegressor(n_estimators=1000, max_depth=9, random_state=seed, n_jobs=-1),
+       ExtraTreesRegressor(n_estimators=3200, max_depth=15, random_state=seed, n_jobs=-1),
        RandomForestRegressor(n_estimators=1000, max_depth=7, random_state=seed, n_jobs=-1),
-       ExtraTreesRegressor(n_estimators=2200, max_depth=11, random_state=seed, n_jobs=-1),
-       GradientBoostingRegressor(n_estimators=40, max_depth=3, random_state=seed),
-       GradientBoostingRegressor(n_estimators=20, max_depth=5, random_state=seed),
+       ExtraTreesRegressor(n_estimators=1800, max_depth=9, random_state=seed, n_jobs=-1),
+       GradientBoostingRegressor(n_estimators=40, max_depth=3, random_state=seed), 
        ],
        ####### Second Level #######
        [
-       RandomForestRegressor(n_estimators=1000, max_depth=9, n_jobs=-1, random_state=seed),
-       ExtraTreesRegressor(n_estimators=1800, max_depth=9, random_state=seed, n_jobs=-1),
-       BayesianRidge()
+       Ridge(alpha=512, random_state=seed),
+       RandomForestRegressor(n_estimators=800, max_depth=11, random_state=seed, n_jobs=-1),
+       ExtraTreesRegressor(n_estimators=2200, max_depth=11, random_state=seed, n_jobs=-1),
        ],
        [
-       Ridge(alpha=512, random_state=seed)
+       KernelRidge(alpha=512)
        ]
        ]
+
+'''
+### training + validation 82.4663
+models=[
+       ### First Level ###
+       [
+       BayesianRidge(),
+       RandomForestRegressor(n_estimators=1000, max_depth=9, random_state=seed, n_jobs=-1),
+       RandomForestRegressor(n_estimators=1000, max_depth=7, random_state=seed, n_jobs=-1),
+       ExtraTreesRegressor(n_estimators=1800, max_depth=9, random_state=seed, n_jobs=-1),
+       GradientBoostingRegressor(n_estimators=40, max_depth=3, random_state=seed),
+       GradientBoostingRegressor(n_estimators=20, max_depth=5, random_state=seed),
+       ],
+       ### Second Level ###
+       [
+       Ridge(alpha=512, random_state=seed),
+       ExtraTreesRegressor(n_estimators=2200, max_depth=11, random_state=seed, n_jobs=-1),
+       RandomForestRegressor(n_estimators=800, max_depth=11, random_state=seed, n_jobs=-1),
+       ],
+       ### Third Level ###
+       [
+       KernelRidge(alpha=512),
+       ],
+       ]
+'''
+
 
 ############################################# Five-fold Cross-Validation ################################
 
@@ -271,8 +297,8 @@ X = selected_high_variance_pca_normalized_train_valid_features
 #y = train_labels
 y = train_valid_labels
 
-np.save('X.npy', X)
-np.save('y.npy', y)
+#np.save('X.npy', X)
+#np.save('y.npy', y)
 
 cv_fold = 10
 y_mse = np.zeros(cv_fold)
@@ -310,7 +336,7 @@ for train_idx, test_idx in skf.split(X, group_labels):
 	#regr = MLPRegressor(hidden_layer_sizes=(2), solver='adam', max_iter=10000, random_state=seed)
 	
 
-	regr = StackNetRegressor(models, metric="rmse", folds=5, restacking=True, use_retraining=True, random_state=seed, n_jobs=-1, verbose=1)
+	regr = StackNetRegressor(models, metric="rmse", folds=5, restacking=True, use_retraining=True, random_state=seed, n_jobs=-1, verbose=0)
 	regr.fit(X_train, y_train)
 	
 	y_pred = regr.predict(X_test)
