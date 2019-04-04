@@ -28,6 +28,8 @@ from sklearn.neural_network import MLPRegressor
 from pystacknet.pystacknet import StackNetRegressor
 from xgboost import XGBRegressor
 
+import ml_insights as mli
+
 def plot_fluid_intelligence_histogram(labels):
 	'''plot the histogram of fluid intelligence'''
 	n, bins, patches = plt.hist(labels, 50, density=True, facecolor='g', alpha=0.75)
@@ -97,7 +99,6 @@ df_train = merged_train_df.drop(dropped_names, axis=1)
 
 # Ground-truth of the fluid intelligence score
 train_labels = df_train['residual_fluid_intelligence_score'].values
-print(np.mean(train_labels), np.std(train_labels))
 
 # training dataset in dataframe
 df_train = df_train.drop('residual_fluid_intelligence_score', axis = 1)
@@ -125,7 +126,6 @@ df_valid_age_gender = pd.get_dummies(df_valid_age_gender)
 df_valid = merged_valid_df.drop(dropped_names, axis=1)
 
 valid_labels = df_valid['residual_fluid_intelligence_score'].values
-print(np.mean(valid_labels), np.std(valid_labels))
 
 df_valid = df_valid.drop('residual_fluid_intelligence_score', axis = 1)
 
@@ -154,43 +154,11 @@ test_age_gender = df_test_age_gender.values
 df_test_subject_name = merged_test_df[['subject']]
 
 
-######################################## Data Pre-processing #####################################################
-
-'''
-print('Normalizing features...')
-scaler_1 = StandardScaler()
-normalized_train_features = scaler_1.fit_transform(train_features)
-normalized_valid_features = scaler_1.fit_transform(valid_features)
-#print(normalized_train_features.shape[1])
-
-#normalized_age_gender = scaler.fit_transform(age_gender)
-
-print('Performing feature dimension reduction...')
-pca_1 = PCA(n_components='mle', svd_solver='full', random_state=seed)
-pca_normalized_train_features = pca_1.fit_transform(normalized_train_features)
-pca_normalized_valid_features = pca_1.transform(normalized_valid_features)
-print(pca_normalized_train_features.shape[1])
-
-print('Removing features with low variance...')
-sel_1 = VarianceThreshold(0.5*(1-0.5))
-high_variance_pca_normalized_train_features = sel_1.fit_transform(pca_normalized_train_features)
-high_variance_pca_normalized_valid_features = sel_1.transform(pca_normalized_valid_features)
-#high_variance_feature_list = [name for idx, name in enumerate(feature_list) if sel.get_support()[idx]]
-#print(high_variance_pca_normalized_train_features.shape[1])
-
-print('Performing feature selection...')
-print('Univariate Selection...')
-skb_1 = SelectKBest(f_regression, k=24)
-selected_high_variance_pca_normalized_train_features = skb_1.fit_transform(high_variance_pca_normalized_train_features, train_labels)
-selected_high_variance_pca_normalized_valid_features = skb_1.transform(high_variance_pca_normalized_valid_features)
-'''
-
 ################################# Training + Validation, Testing  #################################################
 
 
 train_valid_labels = np.concatenate((train_labels, valid_labels), axis=0)
 train_valid_features = np.concatenate((train_features, valid_features), axis=0)
-print(np.mean(train_valid_labels), np.std(train_valid_labels))
 
 #fig, ax = plt.subplots()
 #df_train_valid_fi.hist(column='residual_fluid_intelligence_score', bins=100, ax=ax)
@@ -202,52 +170,60 @@ print('Normalizing features...')
 scaler = StandardScaler()
 normalized_train_valid_features = scaler.fit_transform(train_valid_features.astype('float64'))
 normalized_test_features = scaler.transform(test_features.astype('float64'))
-print(normalized_train_valid_features.shape[1], normalized_test_features.shape[1])
+
+
 
 print('Performing PCA feature dimension reduction...')
 pca = PCA(n_components='mle', svd_solver='full', random_state=seed)
 pca_normalized_train_valid_features = pca.fit_transform(normalized_train_valid_features)
 pca_normalized_test_features = pca.transform(normalized_test_features)
-print(pca_normalized_train_valid_features.shape[1], pca_normalized_test_features.shape[1])
+project_matrix = pca.components_.T
+PCA_feature_list = list(range(0,120))
+
+print(pca.explained_variance_)
+print(pca.singular_values_)
+exit()
 
 print('Removing features with low variance...')
 sel = VarianceThreshold(0.5*(1-0.5))
 high_variance_pca_normalized_train_valid_features = sel.fit_transform(pca_normalized_train_valid_features)
 high_variance_pca_normalized_test_features = sel.transform(pca_normalized_test_features)
-#high_variance_feature_list = [name for idx, name in enumerate(feature_list) if sel.get_support()[idx]]
-#print(high_variance_pca_normalized_train_valid_features.shape[1], high_variance_pca_normalized_test_features.shape[1])
+high_variance_feature_list = [name for idx, name in enumerate(PCA_feature_list) if sel.get_support()[idx]]
+
 
 print('Performing feature selection...')
 print('Univariate Selection...')
 skb = SelectKBest(f_regression, k=24)
 selected_high_variance_pca_normalized_train_valid_features = skb.fit_transform(high_variance_pca_normalized_train_valid_features, train_valid_labels)
 selected_high_variance_pca_normalized_test_features = skb.transform(high_variance_pca_normalized_test_features)
-#print(selected_high_variance_pca_normalized_train_valid_features.shape[1], selected_high_variance_pca_normalized_test_features.shape[1])
 
-############################################### StackNet #################################################
 
+
+skb_idx = skb.get_support(indices=True)
+skb_importance = skb.scores_[skb_idx]
+normalized_skb_importance = skb_importance/np.sum(skb_importance)
+k_best_high_variance_feature_list = [name for idx, name in enumerate(high_variance_feature_list) if skb.get_support()[idx]]
+
+importance_scales = pca.explained_variance_ratio_[k_best_high_variance_feature_list]
+normalized_importance_scales = importance_scales/np.sum(importance_scales)
+importance_regions = np.abs(project_matrix[:, k_best_high_variance_feature_list])
+
+normalized_importance_regions = importance_regions/np.sum(importance_regions, axis=0)
+#normalized_importance_regions = importance_regions/np.sum(importance_regions)
+
+x_temp = normalized_importance_scales*normalized_importance_regions
+x = x_temp*normalized_skb_importance
+
+regions_importance = np.sum(x, axis=1)
+regions_importance_percentage = np.round(regions_importance/np.sum(regions_importance), 4)*100
+larger_index = np.where(regions_importance_percentage >= 1.04 )
+
+for idx in larger_index[0]:
+	print(feature_list[idx], np.round(regions_importance_percentage[idx],2))
 '''
-### training, validation
-models=[
-       ###### First Level ########## 
-       [
-       RandomForestRegressor(n_estimators=800, max_depth=7, random_state=seed, n_jobs=-1),
-       RandomForestRegressor(n_estimators=1000, max_depth=3, n_jobs=-1, random_state=seed),
-       XGBRegressor(n_estimators=60, max_depth=3, n_jobs=-1, random_state=seed),
-       ExtraTreesRegressor(n_estimators=1800, max_depth=7, random_state=seed, n_jobs=-1),
-       GradientBoostingRegressor(n_estimators=30, max_depth=3, random_state=seed),
-       KNeighborsRegressor(n_neighbors=300, weights='uniform', n_jobs=-1),
-       ElasticNet(random_state=seed),
-       ],
-       ####### Second Level #######
-       [
-       RandomForestRegressor(n_estimators=800, max_depth=3, n_jobs=-1, random_state=seed),
-       ],
-       ]
-'''
 
 
-### training + validation 82.4197
+
 models=[
        ### First Level ### 
        [
@@ -321,12 +297,12 @@ for train_idx, test_idx in skf.split(X, group_labels):
 	#regr = OrthogonalMatchingPursuit()
 	#regr = BayesianRidge()
 	#regr = HuberRegressor()
-	regr = KernelRidge(alpha=512)
+	#regr = KernelRidge(alpha=512)
 	#regr = KNeighborsRegressor(n_neighbors=int(sys.argv[1]), weights='uniform', n_jobs=-1)
 	#regr = MLPRegressor(hidden_layer_sizes=(2), solver='adam', max_iter=10000, random_state=seed)
 	
 
-	#regr = StackNetRegressor(models, metric="rmse", folds=5, restacking=True, use_retraining=True, random_state=seed, n_jobs=-1, verbose=0)
+	regr = StackNetRegressor(models, metric="rmse", folds=5, restacking=True, use_retraining=True, random_state=seed, n_jobs=-1, verbose=0)
 	regr.fit(X_train, y_train)
 	
 	y_pred = regr.predict(X_test)
@@ -363,3 +339,4 @@ df_predicted_fi_test.to_csv('pred_test.csv', index= False)
 fig, ax = plt.subplots()
 df_predicted_fi_test.hist(column='predicted_score', bins=100, ax=ax)
 fig.savefig('predicted_test.png')
+'''

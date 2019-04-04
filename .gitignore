@@ -2,5 +2,8 @@ __pycache__
 histogram_gf
 correlations
 gridsearch.py
+testData
+TrainData
+ValidData
 *.npy
 *.csv
