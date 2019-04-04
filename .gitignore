@@ -3,7 +3,8 @@ histogram_gf
 correlations
 gridsearch.py
 testData
-TrainData
-ValidData
+trainData
+validData
 *.npy
 *.csv
+*.png
