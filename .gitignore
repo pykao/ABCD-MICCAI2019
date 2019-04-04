@@ -8,3 +8,4 @@ validData
 *.npy
 *.csv
 *.png
+test.py
