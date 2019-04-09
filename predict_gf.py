@@ -154,37 +154,6 @@ test_age_gender = df_test_age_gender.values
 df_test_subject_name = merged_test_df[['subject']]
 
 
-######################################## Data Pre-processing #####################################################
-
-'''
-print('Normalizing features...')
-scaler_1 = StandardScaler()
-normalized_train_features = scaler_1.fit_transform(train_features)
-normalized_valid_features = scaler_1.fit_transform(valid_features)
-#print(normalized_train_features.shape[1])
-
-#normalized_age_gender = scaler.fit_transform(age_gender)
-
-print('Performing feature dimension reduction...')
-pca_1 = PCA(n_components='mle', svd_solver='full', random_state=seed)
-pca_normalized_train_features = pca_1.fit_transform(normalized_train_features)
-pca_normalized_valid_features = pca_1.transform(normalized_valid_features)
-print(pca_normalized_train_features.shape[1])
-
-print('Removing features with low variance...')
-sel_1 = VarianceThreshold(0.5*(1-0.5))
-high_variance_pca_normalized_train_features = sel_1.fit_transform(pca_normalized_train_features)
-high_variance_pca_normalized_valid_features = sel_1.transform(pca_normalized_valid_features)
-#high_variance_feature_list = [name for idx, name in enumerate(feature_list) if sel.get_support()[idx]]
-#print(high_variance_pca_normalized_train_features.shape[1])
-
-print('Performing feature selection...')
-print('Univariate Selection...')
-skb_1 = SelectKBest(f_regression, k=24)
-selected_high_variance_pca_normalized_train_features = skb_1.fit_transform(high_variance_pca_normalized_train_features, train_labels)
-selected_high_variance_pca_normalized_valid_features = skb_1.transform(high_variance_pca_normalized_valid_features)
-'''
-
 ################################# Training + Validation, Testing  #################################################
 
 
