@@ -290,12 +290,12 @@ for train_idx, test_idx in skf.split(X, group_labels):
 	#regr = OrthogonalMatchingPursuit()
 	#regr = BayesianRidge()
 	#regr = HuberRegressor()
-	regr = KernelRidge(alpha=512)
+	#regr = KernelRidge(alpha=512)
 	#regr = KNeighborsRegressor(n_neighbors=int(sys.argv[1]), weights='uniform', n_jobs=-1)
 	#regr = MLPRegressor(hidden_layer_sizes=(2), solver='adam', max_iter=10000, random_state=seed)
 	
 
-	#regr = StackNetRegressor(models, metric="rmse", folds=5, restacking=True, use_retraining=True, random_state=seed, n_jobs=-1, verbose=0)
+	regr = StackNetRegressor(models, metric="rmse", folds=5, restacking=True, use_retraining=True, random_state=seed, n_jobs=-1, verbose=0)
 	regr.fit(X_train, y_train)
 	
 	y_pred = regr.predict(X_test)
