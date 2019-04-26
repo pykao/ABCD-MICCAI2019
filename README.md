@@ -1,6 +1,6 @@
 # The ABCD Neurocognitive Prediction Challenge 2019
 
-[Predicting Fluid Intelligence of Children using T1-weighted MR Images and a StackNet](https://arxiv.org/abs/1904.07387)
+This repository implements the work of Kao, Po-Yu, et al. ["Predicting Fluid Intelligence of Children using T1-weighted MR Images and a StackNet"](https://arxiv.org/abs/1904.07387) submitted to ABCD-NP-Challenge 2019. 
 
 ## Dependencies
 
