@@ -1,5 +1,7 @@
 # The ABCD Neurocognitive Prediction Challenge 2019
 
+[Predicting Fluid Intelligence of Children using T1-weighted MR Images and a StackNet](https://arxiv.org/abs/1904.07387)
+
 ## Dependencies
 
 Python 3.6
